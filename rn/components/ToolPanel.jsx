@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Text, View } from 'react-native';
+import { Text, View } from "react-native";
 
 const functionDescription = `
 Call this function when a user asks for a color palette.
@@ -45,43 +45,47 @@ function FunctionCallOutput({ functionCallOutput }) {
     <View
       key={color}
       style={{
-        width: '100%',
+        width: "100%",
         height: 64,
         borderRadius: 6,
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: "center",
+        alignItems: "center",
         borderWidth: 1,
-        borderColor: '#e5e7eb',
-        backgroundColor: color
+        borderColor: "#e5e7eb",
+        backgroundColor: color,
       }}
     >
-      <Text style={{
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: 'black',
-        backgroundColor: '#f1f5f9',
-        borderRadius: 6,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderWidth: 1,
-        borderColor: 'black'
-      }}>
+      <Text
+        style={{
+          fontSize: 14,
+          fontWeight: "bold",
+          color: "black",
+          backgroundColor: "#f1f5f9",
+          borderRadius: 6,
+          paddingHorizontal: 8,
+          paddingVertical: 4,
+          borderWidth: 1,
+          borderColor: "black",
+        }}
+      >
         {color}
       </Text>
     </View>
   ));
 
   return (
-    <View style={{ flexDirection: 'column', gap: 8 }}>
+    <View style={{ flexDirection: "column", gap: 8 }}>
       <Text>Theme: {theme}</Text>
       {colorBoxes}
-      <Text style={{
-        fontSize: 12,
-        backgroundColor: '#f3f4f6',
-        borderRadius: 6,
-        padding: 8,
-        fontFamily: 'monospace'
-      }}>
+      <Text
+        style={{
+          fontSize: 12,
+          backgroundColor: "#f3f4f6",
+          borderRadius: 6,
+          padding: 8,
+          fontFamily: "monospace",
+        }}
+      >
         {JSON.stringify(functionCallOutput, null, 2)}
       </Text>
     </View>
@@ -140,14 +144,18 @@ export default function ToolPanel({
   }, [isSessionActive]);
 
   return (
-    <View style={{ flex: 1, width: '100%', flexDirection: 'column', gap: 16 }}>
-      <View style={{
-        flex: 1,
-        backgroundColor: '#f9fafb',
-        borderRadius: 6,
-        padding: 16
-      }}>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>Color Palette Tool</Text>
+    <View style={{ flex: 1, width: "100%", flexDirection: "column", gap: 16 }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#f9fafb",
+          borderRadius: 6,
+          padding: 16,
+        }}
+      >
+        <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 16 }}>
+          Color Palette Tool
+        </Text>
         {isSessionActive ? (
           functionCallOutput ? (
             <FunctionCallOutput functionCallOutput={functionCallOutput} />
