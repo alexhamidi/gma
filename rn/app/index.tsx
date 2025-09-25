@@ -5,11 +5,13 @@ import { View } from "react-native";
 import SessionControlsNew from "../components/SessionControlsNew";
 import { generateUUID } from "./utils/crypto";
 import { RealtimeOpenAIConnection } from "./utils/rtc";
+import * as tools from "./utils/tools";
 
 export default function App() {
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [events, setEvents] = useState<any[]>([]);
   const [dataChannel, setDataChannel] = useState<any>(null);
+  const [toolsRegistered, setToolsRegistered] = useState(false);
 
   const [rtc] = useState(
     () =>
@@ -18,6 +20,67 @@ export default function App() {
         process.env.EXPO_PUBLIC_OPENAI_API_KEY!,
       ),
   );
+
+  const sessionUpdate = {
+    type: "session.update",
+    session: {
+      tools: [
+        // {
+        //   type: "function",
+        //   name: "sendMessage",
+        //   description: "Send a message to a recipient",
+        //   parameters: {
+        //     type: "object",
+        //     strict: true,
+        //     properties: {
+        //       message: {
+        //         type: "string",
+        //         description: "The message content to send",
+        //       },
+        //       recipient: {
+        //         type: "string",
+        //         description: "The recipient of the message",
+        //       },
+        //     },
+        //     required: ["message", "recipient"],
+        //   },
+        // },
+        // {
+        //   type: "function",
+        //   name: "callUber",
+        //   description: "Call an Uber to a destination",
+        //   parameters: {
+        //     type: "object",
+        //     strict: true,
+        //     properties: {
+        //       destination: {
+        //         type: "string",
+        //         description: "The destination address for the Uber ride",
+        //       },
+        //     },
+        //     required: ["destination"],
+        //   },
+        // },
+        {
+          type: "function",
+          name: "openApp",
+          description: "open an app",
+          parameters: {
+            type: "object",
+            strict: true,
+            properties: {
+              appName: {
+                type: "string",
+                description: "the name of the app to open",
+              },
+            },
+            required: ["appName"],
+          },
+        },
+      ],
+      tool_choice: "auto",
+    },
+  };
 
   async function startSession() {
     try {
@@ -28,27 +91,6 @@ export default function App() {
       setIsSessionActive(false);
       throw error;
     }
-  }
-
-  function sendTextMessage(message: string) {
-    const messageEvent = {
-      event_id: generateUUID(),
-      timestamp: new Date().toLocaleTimeString(),
-      type: "conversation.item.create",
-      item: {
-        type: "message",
-        role: "user",
-        content: [
-          {
-            type: "input_text",
-            text: message,
-          },
-        ],
-      },
-    };
-
-    rtc.sendClientEvent(messageEvent);
-    rtc.sendClientEvent({ type: "response.create" });
   }
 
   const handleStopSession = () => {
@@ -95,6 +137,70 @@ export default function App() {
       };
     }
   }, [dataChannel]);
+
+  useEffect(() => {
+    if (!events || events.length === 0) return;
+
+    const firstEvent = events[events.length - 1];
+    if (!toolsRegistered && firstEvent.type === "session.created") {
+      rtc.sendClientEvent(sessionUpdate);
+      setToolsRegistered(true);
+    }
+
+    const mostRecentEvent = events[0];
+    if (
+      mostRecentEvent.type === "response.done" &&
+      mostRecentEvent.response.output
+    ) {
+      mostRecentEvent.response.output.forEach(async (output: any) => {
+        if (output.type === "function_call") {
+          let result = "";
+          
+          try {
+            if (output.name === "openApp") {
+              console.log("Opening app", output.arguments);
+              const args = JSON.parse(output.arguments);
+              result = await tools.openApp(args.appName);
+            }
+            // if (output.name === "sendMessage") {
+            //   const args = JSON.parse(output.arguments);
+            //   result = await tools.sendMessage(args.message, args.recipient);
+            // } else if (output.name === "callUber") {
+            //   const args = JSON.parse(output.arguments);
+            //   result = await tools.callUber(args.destination);
+            // }
+
+            rtc.sendClientEvent({
+              type: "conversation.item.create",
+              item: {
+                type: "function_call_output",
+                call_id: output.call_id,
+                output: result,
+              },
+            });
+
+            rtc.sendClientEvent({ type: "response.create" });
+          } catch (error) {
+            console.error("Error executing function:", error);
+            rtc.sendClientEvent({
+              type: "conversation.item.create",
+              item: {
+                type: "function_call_output",
+                call_id: output.call_id,
+                output: `Error: ${error}`,
+              },
+            });
+          }
+        }
+      });
+    }
+  }, [events, toolsRegistered, rtc, sessionUpdate]);
+
+  useEffect(() => {
+    if (!isSessionActive) {
+      setToolsRegistered(false);
+    }
+  }, [isSessionActive]);
 
   useEffect(() => {
     return () => {

@@ -53,7 +53,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>This app uses speech recognition to process voice commands for AI interaction.</string>
 </dict>
 </plist>
