@@ -17,10 +17,11 @@
     "@react-navigation/native": "^7.1.6",
     "cactus-react-native": "^0.2.9",
     "dotenv": "^17.2.1",
-    "expo": "~53.0.20",
+    "expo": "^54.0.20",
     "expo-av": "^15.1.7",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.7",
+    "expo-dev-client": "~5.2.4",
     "expo-file-system": "^18.1.11",
     "expo-font": "~13.3.2",
     "expo-haptics": "~14.1.4",
@@ -50,8 +51,7 @@
     "react-native-web": "~0.20.0",
     "react-native-webrtc": "^124.0.6",
     "react-native-webview": "13.13.5",
-    "ws": "^8.18.3",
-    "expo-dev-client": "~5.2.4"
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
